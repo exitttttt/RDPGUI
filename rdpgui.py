@@ -34,6 +34,16 @@ class Ui_RDPGUI(object):
         icon.addPixmap(QtGui.QPixmap(_fromUtf8("selectuser.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         RDPGUI.setWindowIcon(icon)
         RDPGUI.setStyleSheet(_fromUtf8("background-color: rgb(24, 93, 123);"))
+
+	#actionList
+        self.actionList = QtGui.QComboBox(RDPGUI)
+        self.actionList.setStyleSheet(_fromUtf8("color: rgb(255, 255, 255);"))
+        self.actionList.setObjectName(_fromUtf8("serverBox"))
+	self.actionList.addItem('Quitter')
+	self.actionList.addItem(_fromUtf8("Redémarrer"))
+	self.actionList.addItem('Eteindre')
+	self.actionList.currentIndexChanged.connect(self.actionListchange)
+
         self.image = QtGui.QLabel(RDPGUI)
         self.image.setGeometry(QtCore.QRect(220, 30, 191, 191))
         self.image.setText(_fromUtf8(""))
@@ -43,10 +53,10 @@ class Ui_RDPGUI(object):
         self.enterButton.setGeometry(QtCore.QRect(430, 340, 31, 31))
         self.enterButton.setStyleSheet(_fromUtf8("background-color: rgb(255, 255, 255);"))
         self.enterButton.setText(_fromUtf8(""))
-        self.exitButton = QtGui.QPushButton(RDPGUI)
-        self.exitButton.setGeometry(QtCore.QRect(430, 400, 31, 31))
-        self.exitButton.setStyleSheet(_fromUtf8("background-color: rgb(255, 100, 100);"))
-        self.exitButton.setText(_fromUtf8("Exit"))
+        #self.exitButton = QtGui.QPushButton(RDPGUI)
+        #self.exitButton.setGeometry(QtCore.QRect(430, 400, 31, 31))
+        #self.exitButton.setStyleSheet(_fromUtf8("background-color: rgb(255, 100, 100);"))
+        #self.exitButton.setText(_fromUtf8("Exit"))
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap(_fromUtf8("enter.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.enterButton.setIcon(icon1)
@@ -96,6 +106,10 @@ class Ui_RDPGUI(object):
         self.RDPdomain.setStyleSheet(_fromUtf8("color: rgb(255, 255, 255);"))
         self.RDPdomain.setObjectName(_fromUtf8("RDPdomain"))
         self.gridLayout.addWidget(self.RDPdomain, 1, 1, 1, 1)
+	#messageBox
+	self.messageBox = QtGui.QMessageBox()
+	self.messageBox.setIcon(QtGui.QMessageBox.Information)
+	
 
         self.retranslateUi(RDPGUI)
         QtCore.QObject.connect(self.RDPpassword, QtCore.SIGNAL(_fromUtf8("returnPressed()")), self.enterButton.click)
@@ -114,7 +128,7 @@ class Ui_RDPGUI(object):
         self.domainlabel.setText(_translate("RDPGUI", "Domain:", None))
         self.RDPdomain.setText(_translate("RDPGUI", "DOMAIN", None))
 	self.enterButton.clicked.connect(self.handleButton)
-	self.exitButton.clicked.connect(self.doExitNow)
+	#self.exitButton.clicked.connect(self.doExitNow)
 	config = ConfigParser.ConfigParser()
 	config.read('rdpgui.ini')
 	serverlist = str(config.get("DEFAULT", "RDPServer")).split()
@@ -136,6 +150,17 @@ class Ui_RDPGUI(object):
 
     def doExitNow(self):
         sys.exit(app.exec_());
+
+    def actionListchange(self, i):
+	self.messageBox.setText("%s" % i)
+	if i == 0:
+		print ''
+		#self.messageBox.exec_()
+	elif i == 1:
+		os.system('/sbin/shutdown -r -t 0 now')
+	elif i == 2:
+		os.system('/sbin/shutdown -h -t 0 now')
+
 
     def handleButton(self):
 	config = ConfigParser.ConfigParser()
@@ -175,6 +200,9 @@ class Ui_RDPGUI(object):
 		self.version.setText(_translate("RDPGUI", "rpi-tc rdp gui v1", None))
 		self.RDPdomain.setText(_translate("RDPGUI", config.get("DEFAULT", "RDPDomain"), None))
 		self.label.setText(_fromUtf8(""))
+	#debug
+	#self.messageBox.setText(out)
+	#self.messageBox.exec_()
 
 
 def centreWidget(self):
