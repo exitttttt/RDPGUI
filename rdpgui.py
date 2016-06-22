@@ -39,6 +39,7 @@ class Ui_RDPGUI(object):
         self.actionList = QtGui.QComboBox(RDPGUI)
         self.actionList.setStyleSheet(_fromUtf8("color: rgb(255, 255, 255);"))
         self.actionList.setObjectName(_fromUtf8("serverBox"))
+	self.actionList.addItem('-----')
 	self.actionList.addItem('Quitter')
 	self.actionList.addItem(_fromUtf8("Redémarrer"))
 	self.actionList.addItem('Eteindre')
@@ -106,9 +107,12 @@ class Ui_RDPGUI(object):
         self.RDPdomain.setStyleSheet(_fromUtf8("color: rgb(255, 255, 255);"))
         self.RDPdomain.setObjectName(_fromUtf8("RDPdomain"))
         self.gridLayout.addWidget(self.RDPdomain, 1, 1, 1, 1)
-	#messageBox
-	self.messageBox = QtGui.QMessageBox()
-	self.messageBox.setIcon(QtGui.QMessageBox.Information)
+	#messageBoxActionList
+	self.messageBoxActionList = QtGui.QMessageBox()
+	self.messageBoxActionList.setIcon(QtGui.QMessageBox.Information)
+	self.messageBoxActionList.addButton('Oui', QtGui.QMessageBox.AcceptRole)
+	self.messageBoxActionList.addButton('Non', QtGui.QMessageBox.RejectRole)
+	#self.messageBoxActionList.buttonClicked.connect(msgBoxActionListClicked)
 	
 
         self.retranslateUi(RDPGUI)
@@ -119,11 +123,11 @@ class Ui_RDPGUI(object):
 
     def retranslateUi(self, RDPGUI):
         RDPGUI.setWindowTitle(_translate("RDPGUI", "RDPGUI", None))
-        self.RDPusername.setPlaceholderText(_translate("RDPGUI", "Username", None))
-        self.RDPpassword.setToolTip(_translate("RDPGUI", "Insert username", None))
-        self.RDPpassword.setPlaceholderText(_translate("RDPGUI", "Password", None))
+        self.RDPusername.setPlaceholderText(_translate("RDPGUI", "Nom utilisateur", None))
+        self.RDPpassword.setToolTip(_translate("RDPGUI", "Nom utilisateur", None))
+        self.RDPpassword.setPlaceholderText(_translate("RDPGUI", "Mot de passe", None))
         self.version.setText(_translate("RDPGUI", "rpi-tc rdp gui v3", None))
-        self.serverlabel.setText(_translate("RDPGUI", "Server:", None))
+        self.serverlabel.setText(_translate("RDPGUI", "Serveur:", None))
         self.serverBox.setItemText(0, _translate("RDPGUI", "server1.domain.lan", None))
         self.domainlabel.setText(_translate("RDPGUI", "Domain:", None))
         self.RDPdomain.setText(_translate("RDPGUI", "DOMAIN", None))
@@ -152,14 +156,23 @@ class Ui_RDPGUI(object):
         sys.exit(app.exec_());
 
     def actionListchange(self, i):
-	self.messageBox.setText("%s" % i)
-	if i == 0:
-		print ''
-		#self.messageBox.exec_()
-	elif i == 1:
-		os.system('/sbin/shutdown -r -t 0 now')
+
+	if i == 1:
+		self.messageBoxActionList.setText(_fromUtf8("Etes-vous sur de vouloir quitter?"))
 	elif i == 2:
-		os.system('/sbin/shutdown -h -t 0 now')
+		self.messageBoxActionList.setText(_fromUtf8("Etes-vous sur de vouloir redémarrer l'ordinateur?"))
+	elif i == 3:
+		self.messageBoxActionList.setText(_fromUtf8("Etes-vous sur de vouloir éteindre l'ordinateur?"))
+
+	result = self.messageBoxActionList.exec_()
+
+	if result == 0: #Ok button
+		if i == 1:
+			self.doExitNow()
+		elif i == 2:
+			os.system('/sbin/shutdown -r -t 0 now')
+		elif i == 3:
+			os.system('/sbin/shutdown -h -t 0 now')
 
 
     def handleButton(self):
@@ -184,15 +197,15 @@ class Ui_RDPGUI(object):
 	print out
 	if out.find("Authentication failure, check credentials") > 0:
 		print "Authentication failure!"
-		self.version.setText(_translate("RDPGUI", "Auth Error...", None))
-		self.label.setText(_fromUtf8("Wrong username or password!"))
+		self.version.setText(_translate("RDPGUI", "Erreur", None))
+		self.label.setText(_fromUtf8("Mauvais nom d'utilisateur ou mot de passe!"))
 	elif out.find("getaddrinfo (System error)") > 0 or out.find("getaddrinfo: System error") >= 0:
 		print "Error connecting to server!"
-		self.version.setText(_translate("RDPGUI", "Server Error...", None))
-		self.label.setText(_fromUtf8("Server Error, call your sysadmin"))
+		self.version.setText(_translate("RDPGUI", "Erreur Serveur", None))
+		self.label.setText(_fromUtf8("Erreur système, contacter le service informatique!"))
 	elif out.find("unable to connect to") >= 0 or out.find("A Remote Desktop Protocol client") >= 0:
 		print "Error connecting to server!"
-		self.version.setText(_translate("RDPGUI", "Server Error...", None))
+		self.version.setText(_translate("RDPGUI", "Erreur Serveur", None))
 		self.label.setText(_fromUtf8("Server Error, call your sysadmin"))
 	else:
 		self.RDPusername.setText(_translate("RDPGUI", "", None))
